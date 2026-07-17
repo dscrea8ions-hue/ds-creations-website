@@ -1,0 +1,4 @@
+import type { Metadata } from "next";
+import BulkOrderForm from "@/components/BulkOrderForm";
+export const metadata: Metadata = { title: "Bulk Orders", description: "Request a bulk quotation for uniforms and customized products from DS CREATIONS." };
+export default function BulkOrdersPage() { return <><section className="blue-gradient page-hero"><div className="container-custom"><p className="eyebrow">Bulk Manufacturing</p><h1 className="page-title">Tell us what your organization needs</h1><p className="mt-5 max-w-2xl text-lg leading-8 text-white/75">Share sizes, colours, branding and delivery details. The DS CREATIONS team will contact you to confirm specifications and pricing.</p></div></section><section className="section-space bg-[var(--light-bg)]"><div className="container-custom max-w-4xl"><BulkOrderForm /></div></section></>; }

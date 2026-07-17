@@ -1,0 +1,6 @@
+"use client";
+import Link from "next/link";
+import CartItemRow from "@/components/cart/CartItemRow";
+import CartSummary from "@/components/cart/CartSummary";
+import { useCart } from "@/context/CartContext";
+export default function CartPageClient() { const { items, clearCart } = useCart(); return <section className="section-space bg-[var(--light-bg)]"><div className="container-custom">{items.length === 0 ? <div className="content-card py-20 text-center"><h2 className="text-2xl font-black text-[var(--dark-navy)]">Your cart is empty</h2><p className="mt-2 text-slate-600">Browse products and add an item to begin.</p><Link href="/products" className="btn-primary mt-6 inline-flex">Explore Products</Link></div> : <div className="grid gap-8 lg:grid-cols-[1fr_360px]"><div className="content-card p-6"><div className="flex items-center justify-between"><h2 className="text-xl font-black text-[var(--dark-navy)]">Cart items</h2><button onClick={clearCart} className="text-sm font-bold text-red-700">Clear cart</button></div>{items.map((item) => <CartItemRow key={item.key} item={item} />)}<Link href="/products" className="btn-secondary mt-6 inline-flex">Continue Shopping</Link></div><CartSummary /></div>}</div></section>; }

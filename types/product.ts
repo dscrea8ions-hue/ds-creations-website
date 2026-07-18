@@ -2,6 +2,14 @@ export type ProductAudience = "SCHOOL" | "CORPORATE" | "INSTITUTION" | "GENERAL"
 export type StockStatus = "IN_STOCK" | "LOW_STOCK" | "OUT_OF_STOCK" | "MADE_TO_ORDER";
 export type FulfilmentType = "READY_STOCK" | "MADE_TO_ORDER" | "CUSTOMIZED";
 
+export type PublicProductImage = {
+  id: string;
+  url: string;
+  altText: string;
+  isPrimary: boolean;
+  sortOrder: number;
+};
+
 export type Product = {
   id: string;
   slug: string;
@@ -35,6 +43,7 @@ export type Product = {
   createdAt: string;
   mainImage: string;
   galleryImages: string[];
+  images: PublicProductImage[];
   features: string[];
   specifications: Record<string, string>;
   tags: string[];

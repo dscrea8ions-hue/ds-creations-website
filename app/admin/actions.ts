@@ -6,6 +6,16 @@ import { z } from "zod";
 import { requireAdmin, writeAudit } from "@/lib/admin";
 import { BlobStorageError, blobTokenPresent, deletePublicBlob, uploadPublicBlob } from "@/lib/blob-storage";
 import { getPrisma } from "@/lib/prisma";
+import {
+  deleteProductImageService,
+  deleteProductWithImagesService,
+  reorderProductImagesService,
+  reorderProductImageService,
+  replaceProductImageService,
+  setPrimaryProductImageService,
+  uploadProductImageService,
+  uploadProductImageResultService,
+} from "@/lib/product-images/service";
 import { advanceProductSkuCounter, generateNextProductSku, isProductSkuUniqueConflict, withServerProductSku } from "@/lib/sku";
 import { generateUniqueSlug } from "@/lib/slug";
 
@@ -33,13 +43,6 @@ const revalidatePublicAssetPaths = () => {
   ["/", "/about", "/bulk-orders", "/cart", "/catalogue", "/checkout", "/contact", "/industries", "/products", "/quote"].forEach((path) => revalidatePath(path));
   revalidatePath("/products/[slug]", "page");
 };
-const revalidateProductAssetPaths = (adminPath: string) => {
-  revalidatePath(adminPath);
-  revalidatePath("/");
-  revalidatePath("/products");
-  revalidatePath("/products/[slug]", "page");
-};
-
 export async function saveProduct(form: FormData) {
   const user = await requireAdmin(); const id = String(form.get("id") || ""); const parsed = productInput(form); const path = id ? `/admin/products/${id}` : "/admin/products/new";
   if (!parsed.success) fail(path, "Please review the product fields and try again.");
@@ -88,13 +91,7 @@ export async function saveProduct(form: FormData) {
 }
 
 export async function deleteProduct(form: FormData) {
-  const user = await requireAdmin(); const id = z.string().min(1).parse(form.get("id")); const prisma = getPrisma(); const product = await prisma.product.findUnique({ where: { id }, include: { images: true } });
-  if (!product) return fail("/admin/products", "Product record was not found.");
-  try { for (const image of product.images) if (image.pathname) await deletePublicBlob(image.pathname); }
-  catch { fail("/admin/products", "Blob storage rejected the deletion."); }
-  try { await prisma.product.delete({ where: { id } }); await writeAudit(user.id, "PRODUCT_DELETE", "Product", id, { name: product.name }); revalidatePath("/"); revalidatePath("/products"); revalidatePath("/products/[slug]", "page"); revalidatePath("/admin/products"); }
-  catch { fail("/admin/products", "Database record could not be deleted."); }
-  redirect("/admin/products?deleted=1");
+  return deleteProductWithImagesService(form);
 }
 
 export async function toggleProduct(form: FormData) {
@@ -110,48 +107,31 @@ const blobUploadFailure = (path: string, error: unknown): never => {
 };
 
 export async function uploadProductImage(form: FormData) {
-  const user = await requireAdmin(); const productId = z.string().min(1).parse(form.get("productId")); const uploadedValue = form.get("file"); const altText = z.string().trim().min(2).max(180).parse(form.get("altText")); const path = `/admin/products/${productId}`;
-  if (!(uploadedValue instanceof File) || uploadedValue.size === 0) return fail(path, "Choose a non-empty image file.");
-  const file = uploadedValue;
-  if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) return fail(path, "File type is unsupported. Upload JPG, PNG or WEBP only.");
-  if (file.size > 5 * 1024 * 1024) return fail(`/admin/products/${productId}`, "Image is too large. Maximum size is 5 MB.");
-  if (!blobTokenPresent()) return fail(path, "Storage token is missing.");
+  return uploadProductImageService(form);
+}
 
-  const blob = await uploadPublicBlob(`products/${Date.now()}-${safeName(file.name)}`, file).catch((error) => blobUploadFailure(path, error));
-
-  try {
-    const prisma = getPrisma();
-    const image = await prisma.$transaction(async (tx) => {
-      const lastImage = await tx.productImage.findFirst({ where: { productId }, orderBy: [{ sortOrder: "desc" }, { createdAt: "desc" }], select: { sortOrder: true } });
-      return tx.productImage.create({ data: { productId, url: blob.url, pathname: blob.pathname, altText, isPrimary: !lastImage, sortOrder: lastImage ? lastImage.sortOrder + 1 : 0 } });
-    });
-    await writeAudit(user.id, "PRODUCT_IMAGE_UPLOAD", "ProductImage", image.id, { productId });
-    revalidateProductAssetPaths(path);
-  }
-  catch { await deletePublicBlob(blob.pathname).catch(() => undefined); fail(path, "Database record could not be saved."); }
+export async function uploadProductImageFromManager(form: FormData) {
+  return uploadProductImageResultService(form);
 }
 
 export async function setPrimaryImage(form: FormData) {
-  const user = await requireAdmin(); const imageId = z.string().min(1).parse(form.get("imageId")); const productId = z.string().min(1).parse(form.get("productId"));
-  const prisma = getPrisma(); const image = await prisma.productImage.findFirst({ where: { id: imageId, productId }, select: { id: true } });
-  if (!image) return fail(`/admin/products/${productId}`, "Image record was not found.");
-  try { await prisma.$transaction([prisma.productImage.updateMany({ where: { productId }, data: { isPrimary: false } }), prisma.productImage.update({ where: { id: image.id }, data: { isPrimary: true } })]); await writeAudit(user.id, "PRODUCT_IMAGE_PRIMARY", "ProductImage", image.id, { productId }); revalidateProductAssetPaths(`/admin/products/${productId}`); }
-  catch { fail(`/admin/products/${productId}`, "Primary image update failed."); }
+  return setPrimaryProductImageService(form);
 }
 
 export async function moveProductImage(form: FormData) {
-  const user = await requireAdmin(); const imageId = z.string().min(1).parse(form.get("imageId")); const productId = z.string().min(1).parse(form.get("productId")); const direction = z.enum(["up", "down"]).parse(form.get("direction"));
-  try { const prisma = getPrisma(); const images = await prisma.productImage.findMany({ where: { productId }, orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] }); const index = images.findIndex((image) => image.id === imageId); const target = direction === "up" ? index - 1 : index + 1; if (index >= 0 && target >= 0 && target < images.length) await prisma.$transaction([prisma.productImage.update({ where: { id: images[index].id }, data: { sortOrder: images[target].sortOrder } }), prisma.productImage.update({ where: { id: images[target].id }, data: { sortOrder: images[index].sortOrder } })]); await writeAudit(user.id, "PRODUCT_IMAGE_REORDER", "ProductImage", imageId, { productId, direction }); revalidateProductAssetPaths(`/admin/products/${productId}`); }
-  catch { fail(`/admin/products/${productId}`, "Image reorder failed."); }
+  return reorderProductImageService(form);
+}
+
+export async function reorderProductImages(form: FormData) {
+  return reorderProductImagesService(form);
+}
+
+export async function replaceProductImage(form: FormData) {
+  return replaceProductImageService(form);
 }
 
 export async function deleteProductImage(form: FormData) {
-  const user = await requireAdmin(); const imageId = z.string().min(1).parse(form.get("imageId")); const productId = z.string().min(1).parse(form.get("productId")); const path = `/admin/products/${productId}`; const prisma = getPrisma();
-  const image = await prisma.productImage.findFirst({ where: { id: imageId, productId } });
-  if (!image) return fail(path, "Image record was not found.");
-  if (image.pathname) { try { await deletePublicBlob(image.pathname); } catch { fail(path, "Blob storage rejected the deletion."); } }
-  try { await prisma.$transaction(async (tx) => { await tx.productImage.delete({ where: { id: image.id } }); if (image.isPrimary) { const nextImage = await tx.productImage.findFirst({ where: { productId }, orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }], select: { id: true } }); if (nextImage) await tx.productImage.update({ where: { id: nextImage.id }, data: { isPrimary: true } }); } }); await writeAudit(user.id, "PRODUCT_IMAGE_DELETE", "ProductImage", image.id, { productId }); revalidateProductAssetPaths(path); }
-  catch { fail(path, "Database record could not be deleted."); }
+  return deleteProductImageService(form);
 }
 
 export async function saveCategory(form: FormData) {

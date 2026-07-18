@@ -53,7 +53,8 @@ export const products: Product[] = seeds.map((seed, index) => {
     stockStatus: seed.status ?? "IN_STOCK", material: seed.material, sizes: seed.sizes ?? ["Standard"], colours: seed.colours ?? ["Custom"],
     fulfilmentType, deliveryTime: deliveryMessage(fulfilmentType), customizationAvailable: seed.customization ?? false,
     embroideryAvailable: seed.embroidery ?? false, printingAvailable: seed.printing ?? false, featured: seed.featured ?? false,
-    published: true, createdAt: `2026-0${(index % 6) + 1}-01`, mainImage: seed.image, galleryImages: [seed.image, seed.image, seed.image],
+    published: true, createdAt: `2026-0${(index % 6) + 1}-01`, mainImage: seed.image, galleryImages: [seed.image],
+    images: [{ id: `local-${index + 1}-primary`, url: seed.image, altText: seed.name, isPrimary: true, sortOrder: 0 }],
     features: ["Single-piece ordering available", "Quality checked before dispatch", seed.customization ? "Optional customization available" : "Practical standard specification"],
     specifications: { Material: seed.material, "Minimum order": "1 piece", GST: "18%" }, tags: [seed.category, seed.subcategory, seed.audience],
   };

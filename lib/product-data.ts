@@ -1,4 +1,4 @@
-import type { Product } from "@/types/product";
+import type { Product, PublicProductImage } from "@/types/product";
 import { products as localProducts } from "@/data/products";
 import { getPrisma, hasDatabaseUrl } from "@/lib/prisma";
 import type { Prisma } from "@/app/generated/prisma/client";
@@ -7,8 +7,20 @@ type DbProduct = Prisma.ProductGetPayload<{ include: { category: true; images: t
 
 function mapProduct(row: DbProduct): Product {
   const fallback = localProducts.find((product) => product.slug === row.slug);
-  const orderedImages = [...row.images].sort((a, b) => Number(b.isPrimary) - Number(a.isPrimary) || a.sortOrder - b.sortOrder || a.id.localeCompare(b.id)).map((image) => image.url);
-  const mainImage = orderedImages[0] || fallback?.mainImage || "/products/corporate.svg";
+  const seenUrls = new Set<string>();
+  const managedImages = [...row.images]
+    .sort((a, b) => Number(b.isPrimary) - Number(a.isPrimary) || a.sortOrder - b.sortOrder || a.createdAt.getTime() - b.createdAt.getTime() || a.id.localeCompare(b.id))
+    .filter((image) => {
+      if (seenUrls.has(image.url)) return false;
+      seenUrls.add(image.url);
+      return true;
+    })
+    .map<PublicProductImage>((image, index) => ({ id: image.id, url: image.url, altText: image.altText || row.name, isPrimary: index === 0, sortOrder: image.sortOrder }));
+  const fallbackImages = fallback?.images?.length
+    ? fallback.images
+    : [{ id: `fallback-${row.id}`, url: fallback?.mainImage || "/products/corporate.svg", altText: row.name, isPrimary: true, sortOrder: 0 }];
+  const images = (managedImages.length ? managedImages : fallbackImages).map((image, index) => ({ ...image, isPrimary: index === 0 }));
+  const mainImage = images[0].url;
   return {
     id: row.id, slug: row.slug, name: row.name, sku: row.sku, shortDescription: row.shortDescription, description: row.description,
     category: row.category.name, subcategory: row.subcategory || "General", audience: row.audience, institutionName: row.institutionName || undefined,
@@ -19,7 +31,7 @@ function mapProduct(row: DbProduct): Product {
     colours: Array.isArray(row.colours) ? row.colours.map(String) : ["Standard"], weight: row.weight || undefined,
     deliveryTime: row.deliveryTime, fulfilmentType: row.fulfilmentType, customizationAvailable: row.customizationAvailable,
     embroideryAvailable: row.embroideryAvailable, printingAvailable: row.printingAvailable, featured: row.featured, published: row.published,
-    createdAt: row.createdAt.toISOString(), mainImage, galleryImages: orderedImages.length ? orderedImages : [mainImage],
+    createdAt: row.createdAt.toISOString(), mainImage, galleryImages: images.map((image) => image.url), images,
     features: ["Single-piece ordering available", "Quality checked before dispatch", row.customizationAvailable ? "Optional customization available" : "Practical standard specification"],
     specifications: { Material: row.material || "Available on request", "Minimum order": `${Math.max(1, row.minimumOrderQuantity)} piece`, GST: `${Number(row.gstPercentage)}%` },
     tags: [row.category.name, row.subcategory || "", row.audience].filter(Boolean),

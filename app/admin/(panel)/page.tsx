@@ -1,0 +1,13 @@
+import Link from "next/link";
+import { getPrisma } from "@/lib/prisma";
+
+export default async function AdminDashboard() {
+  const prisma = getPrisma();
+  const [total, published, outOfStock, catalogue, logo, recent] = await Promise.all([
+    prisma.product.count(), prisma.product.count({ where: { published: true } }), prisma.product.count({ where: { stockStatus: "OUT_OF_STOCK" } }),
+    prisma.siteAsset.count({ where: { type: "CATALOGUE", active: true } }), prisma.siteAsset.count({ where: { type: "LOGO", active: true } }),
+    prisma.product.findMany({ orderBy: { updatedAt: "desc" }, take: 6, select: { id: true, name: true, updatedAt: true, published: true } }),
+  ]);
+  const cards = [["Total products", total], ["Published products", published], ["Draft products", total - published], ["Out of stock", outOfStock], ["Active catalogue", catalogue ? "Ready" : "Missing"], ["Active logo", logo ? "Ready" : "Missing"]];
+  return <><div className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-sm font-bold uppercase tracking-widest text-[var(--royal-blue)]">Dashboard</p><h1 className="mt-2 text-3xl font-black text-[var(--dark-navy)]">Website overview</h1></div><Link href="/admin/products/new" className="btn-gold">Quick Add Product</Link></div><div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{cards.map(([label, count]) => <div key={String(label)} className="content-card p-6"><p className="text-sm font-bold text-slate-500">{label}</p><p className="mt-2 text-3xl font-black text-[var(--dark-navy)]">{count}</p></div>)}</div><div className="mt-8 grid gap-6 lg:grid-cols-[1fr_300px]"><section className="content-card p-6"><h2 className="text-xl font-black text-[var(--dark-navy)]">Recently updated products</h2><div className="mt-4 divide-y">{recent.map((product) => <Link className="flex justify-between gap-4 py-4 hover:text-[var(--royal-blue)]" href={`/admin/products/${product.id}`} key={product.id}><span className="font-bold">{product.name}</span><span className="text-sm text-slate-500">{product.published ? "Published" : "Draft"} · {product.updatedAt.toLocaleDateString("en-IN")}</span></Link>)}</div></section><aside className="content-card p-6"><h2 className="text-xl font-black text-[var(--dark-navy)]">Quick actions</h2><div className="mt-4 flex flex-col gap-3"><Link className="btn-secondary text-center" href="/admin/assets?type=catalogue">Upload Catalogue</Link><Link className="btn-secondary text-center" href="/admin/assets?type=logo">Change Logo</Link><Link className="btn-secondary text-center" href="/">View Website</Link></div></aside></div></>;
+}

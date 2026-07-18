@@ -1,0 +1,20 @@
+import Link from "next/link";
+import AdminNotice from "@/components/admin/AdminNotice";
+import { toggleProduct } from "@/app/admin/actions";
+import { getPrisma } from "@/lib/prisma";
+
+export default async function AdminProductsPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
+  const params = await searchParams; const prisma = getPrisma();
+  const categories = await prisma.category.findMany({ orderBy: { name: "asc" } });
+  const products = await prisma.product.findMany({
+    where: {
+      ...(params.q ? { OR: [{ name: { contains: params.q, mode: "insensitive" } }, { slug: { contains: params.q, mode: "insensitive" } }, { sku: { contains: params.q, mode: "insensitive" } }] } : {}),
+      ...(params.category ? { categoryId: params.category } : {}), ...(params.audience ? { audience: params.audience as "SCHOOL" } : {}),
+      ...(params.stock ? { stockStatus: params.stock as "IN_STOCK" } : {}), ...(params.published ? { published: params.published === "true" } : {}),
+    }, include: { category: true }, orderBy: { updatedAt: "desc" },
+  });
+  return <><div className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-sm font-bold uppercase tracking-widest text-[var(--royal-blue)]">Products</p><h1 className="mt-2 text-3xl font-black text-[var(--dark-navy)]">Manage products</h1></div><Link href="/admin/products/new" className="btn-gold">Add Product</Link></div><div className="mt-6"><AdminNotice error={params.error} success={params.deleted ? "Product deleted." : undefined} /></div>
+    <form className="content-card grid gap-3 p-4 md:grid-cols-5"><input name="q" defaultValue={params.q} placeholder="Search name, slug or SKU" className="form-control" /><select name="category" defaultValue={params.category} className="form-control"><option value="">All categories</option>{categories.map((category) => <option value={category.id} key={category.id}>{category.name}</option>)}</select><select name="audience" defaultValue={params.audience} className="form-control"><option value="">All audiences</option>{["SCHOOL", "CORPORATE", "INSTITUTION", "GENERAL"].map((item) => <option key={item}>{item}</option>)}</select><select name="stock" defaultValue={params.stock} className="form-control"><option value="">All stock states</option>{["IN_STOCK", "LOW_STOCK", "OUT_OF_STOCK", "MADE_TO_ORDER"].map((item) => <option key={item}>{item}</option>)}</select><button className="btn-primary">Filter products</button></form>
+    <div className="mt-6 overflow-x-auto rounded-2xl bg-white shadow-sm"><table className="w-full min-w-[850px] text-left"><thead className="bg-slate-50 text-xs uppercase text-slate-500"><tr><th className="p-4">Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Published</th><th>Featured</th><th></th></tr></thead><tbody className="divide-y">{products.map((product) => <tr key={product.id}><td className="p-4"><p className="font-black text-[var(--dark-navy)]">{product.name}</p><p className="text-xs text-slate-500">{product.sku}</p></td><td>{product.category.name}</td><td>{product.price ? `₹${Number(product.price).toLocaleString("en-IN")}` : "Contact"}</td><td>{product.stockQuantity} · {product.stockStatus}</td><td><form action={toggleProduct}><input type="hidden" name="id" value={product.id} /><input type="hidden" name="field" value="published" /><input type="hidden" name="value" value={String(!product.published)} /><button className="font-bold text-[var(--royal-blue)]">{product.published ? "Unpublish" : "Publish"}</button></form></td><td><form action={toggleProduct}><input type="hidden" name="id" value={product.id} /><input type="hidden" name="field" value="featured" /><input type="hidden" name="value" value={String(!product.featured)} /><button className="font-bold text-[var(--royal-blue)]">{product.featured ? "Remove" : "Feature"}</button></form></td><td><Link href={`/admin/products/${product.id}`} className="btn-secondary whitespace-nowrap">Edit</Link></td></tr>)}</tbody></table>{!products.length && <p className="p-10 text-center text-slate-500">No products match these filters.</p>}</div>
+  </>;
+}

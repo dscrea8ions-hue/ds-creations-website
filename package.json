@@ -5,21 +5,38 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "test": "tsx --test tests/sku.test.ts",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "postinstall": "prisma generate",
+    "seed": "prisma db seed",
+    "admin:hash": "tsx scripts/hash-password.ts",
+    "hash-password": "tsx scripts/hash-password.ts",
+    "reset-admin-password": "tsx scripts/reset-admin-password.ts"
   },
   "dependencies": {
+    "@prisma/adapter-pg": "^7.8.0",
+    "@prisma/client": "^7.8.0",
+    "@vercel/blob": "^2.6.1",
+    "bcryptjs": "^3.0.3",
+    "dotenv": "^17.4.2",
     "lucide-react": "^0.468.0",
     "next": "^16.0.0",
+    "next-auth": "^5.0.0-beta.31",
+    "pg": "^8.22.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.0.0",
     "@types/node": "^22.10.0",
+    "@types/pg": "^8.20.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "prisma": "^7.8.0",
     "tailwindcss": "^4.0.0",
+    "tsx": "^4.23.1",
     "typescript": "^5.7.0"
   }
 }

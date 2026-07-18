@@ -1,4 +1,6 @@
 import type { FulfilmentType, Product, ProductAudience, StockStatus } from "@/types/product";
+import { formatProductSku } from "@/lib/sku";
+import { slugify } from "@/lib/slug";
 
 type Seed = {
   name: string; category: string; subcategory: string; audience: ProductAudience;
@@ -35,7 +37,6 @@ const seeds: Seed[] = [
   { name: "Corporate Gift Set", category: "Corporate Gifts", subcategory: "Gift Sets", audience: "CORPORATE", price: null, material: "Curated mixed materials", sizes: ["Standard", "Premium"], colours: ["Navy Gold", "Black Gold"], status: "MADE_TO_ORDER", fulfilmentType: "CUSTOMIZED", featured: true, image: "/products/gifts.svg", customization: true, printing: true, shortDescription: "Made-to-order gift set for employee recognition, clients, events and business occasions.", description: "This curated corporate gift set is assembled after contents, presentation and branding are confirmed. One set may be ordered, with optional logo customization and larger gifting quantities after approval." },
 ];
 
-const slugify = (value: string) => value.toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 const deliveryMessage = (type: FulfilmentType) => type === "CUSTOMIZED"
   ? "Estimated delivery: 10–20 working days after artwork, logo and specification approval."
   : type === "MADE_TO_ORDER"
@@ -45,7 +46,7 @@ const deliveryMessage = (type: FulfilmentType) => type === "CUSTOMIZED"
 export const products: Product[] = seeds.map((seed, index) => {
   const fulfilmentType = seed.fulfilmentType ?? (seed.status === "MADE_TO_ORDER" ? "MADE_TO_ORDER" : "READY_STOCK");
   return {
-    id: String(index + 1), slug: slugify(seed.name), name: seed.name, sku: `DSC-${String(index + 1).padStart(4, "0")}`,
+    id: String(index + 1), slug: slugify(seed.name), name: seed.name, sku: formatProductSku(index + 1),
     shortDescription: seed.shortDescription, description: seed.description, category: seed.category, subcategory: seed.subcategory,
     audience: seed.audience, schoolName: seed.schoolName, brand: "DS CREATIONS", price: seed.price, offerPrice: seed.offer,
     gstPercentage: 18, minimumOrderQuantity: 1, stockQuantity: seed.status === "OUT_OF_STOCK" ? 0 : 100,

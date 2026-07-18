@@ -5,7 +5,7 @@ import { Mail, MessageCircle } from "lucide-react";
 
 type EnquiryLinks = { whatsapp: string; email: string } | null;
 
-export default function ContactForm() {
+export default function ContactForm({ whatsapp, email, note }: { whatsapp: string; email: string; note: string }) {
   const [links, setLinks] = useState<EnquiryLinks>(null);
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
@@ -16,8 +16,8 @@ export default function ContactForm() {
     const subject = String(data.get("subject"));
     const details = `Customer name: ${data.get("name")}\nPhone: ${data.get("phone")}\nEmail: ${data.get("email")}\nSubject: ${subject}\n\nMessage:\n${data.get("message")}`;
     setLinks({
-      whatsapp: `https://wa.me/918368045535?text=${encodeURIComponent(`Hello DS CREATIONS,\n\n${details}`)}`,
-      email: `mailto:dscrea8ions@gmail.com?subject=${encodeURIComponent(`Enquiry: ${subject}`)}&body=${encodeURIComponent(details)}`,
+      whatsapp: `https://wa.me/${whatsapp}?text=${encodeURIComponent(`Hello DS CREATIONS,\n\n${details}`)}`,
+      email: `mailto:${email}?subject=${encodeURIComponent(`Enquiry: ${subject}`)}&body=${encodeURIComponent(details)}`,
     });
   };
 
@@ -30,7 +30,7 @@ export default function ContactForm() {
       <label className="form-label sm:col-span-2">Subject *<input name="subject" required className="form-control" /></label>
       <label className="form-label sm:col-span-2">Message *<textarea name="message" required rows={5} className="form-control" /></label>
     </div>
-    <p className="mt-5 text-sm leading-6 text-slate-600">Your message will be sent through WhatsApp or your email application. Online enquiry storage will be added in a future update.</p>
+    <p className="mt-5 text-sm leading-6 text-slate-600">{note} Online enquiry storage will be added in a future update.</p>
     <button type="submit" className="btn-gold mt-6">Prepare Enquiry</button>
     {links && <div role="status" className="mt-6 rounded-xl bg-green-50 p-4 text-green-900">
       <p className="font-bold">Your enquiry details are ready. Choose WhatsApp or Email to send them to DS CREATIONS.</p>

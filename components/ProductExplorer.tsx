@@ -3,15 +3,17 @@
 import { useMemo, useState } from "react";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import ProductCard from "./ProductCard";
-import { audiences, categories, products } from "@/data/products";
+import type { Product, ProductAudience } from "@/types/product";
 
-type Props = { initialAudience?: string };
+type Props = { initialAudience?: string; products: Product[] };
 
-export default function ProductExplorer({ initialAudience = "" }: Props) {
+export default function ProductExplorer({ initialAudience = "", products }: Props) {
   const [search, setSearch] = useState(""); const [category, setCategory] = useState("");
   const [audience, setAudience] = useState(initialAudience); const [availability, setAvailability] = useState("");
   const [institution, setInstitution] = useState(""); const [maxPrice, setMaxPrice] = useState(4000);
   const [sort, setSort] = useState("featured");
+  const categories = [...new Set(products.map((product) => product.category))].sort();
+  const audiences: ProductAudience[] = ["SCHOOL", "CORPORATE", "INSTITUTION", "GENERAL"];
   const institutions = [...new Set(products.map((p) => p.schoolName).filter(Boolean))] as string[];
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();

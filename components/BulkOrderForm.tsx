@@ -2,11 +2,10 @@
 
 import { FormEvent, useState } from "react";
 import { Mail, MessageCircle } from "lucide-react";
-import { products } from "@/data/products";
 
 type EnquiryLinks = { whatsapp: string; email: string } | null;
 
-export default function BulkOrderForm() {
+export default function BulkOrderForm({ productNames, whatsapp, email }: { productNames: string[]; whatsapp: string; email: string }) {
   const [links, setLinks] = useState<EnquiryLinks>(null);
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -22,8 +21,8 @@ export default function BulkOrderForm() {
       `Delivery location: ${value("location")}`, `Expected delivery date: ${value("date")}`, `Additional details: ${value("details")}`,
     ].join("\n");
     setLinks({
-      whatsapp: `https://wa.me/918368045535?text=${encodeURIComponent(message)}`,
-      email: `mailto:dscrea8ions@gmail.com?subject=${encodeURIComponent(`Bulk order enquiry: ${value("product")}`)}&body=${encodeURIComponent(message)}`,
+      whatsapp: `https://wa.me/${whatsapp}?text=${encodeURIComponent(message)}`,
+      email: `mailto:${email}?subject=${encodeURIComponent(`Bulk order enquiry: ${value("product")}`)}&body=${encodeURIComponent(message)}`,
     });
   };
   const control = "form-control";
@@ -33,7 +32,7 @@ export default function BulkOrderForm() {
       <label className="form-label">School, company or institution *<input name="institution" required className={control} /></label>
       <label className="form-label">Phone *<input name="phone" required type="tel" pattern="[0-9+ -]{8,15}" className={control} /></label>
       <label className="form-label">Email *<input name="email" required type="email" className={control} /></label>
-      <label className="form-label">Product *<select name="product" required className={control} defaultValue=""><option value="" disabled>Select a product</option>{products.map((product) => <option key={product.id}>{product.name}</option>)}<option>Other requirement</option></select></label>
+      <label className="form-label">Product *<select name="product" required className={control} defaultValue=""><option value="" disabled>Select a product</option>{productNames.map((productName) => <option key={productName}>{productName}</option>)}<option>Other requirement</option></select></label>
       <label className="form-label">Quantity *<input name="quantity" required min="1" defaultValue="1" type="number" className={control} /></label>
       <label className="form-label">Sizes<input name="sizes" className={control} placeholder="e.g. S–2XL or size-wise breakdown" /></label>
       <label className="form-label">Colours<input name="colours" className={control} placeholder="Preferred colours" /></label>

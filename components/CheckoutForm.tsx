@@ -6,8 +6,9 @@ import BrandLogo from "@/components/BrandLogo";
 import CartSummary from "@/components/cart/CartSummary";
 import { useCart } from "@/context/CartContext";
 import { formatPrice, whatsappUrl } from "@/lib/format";
+import type { PublicSiteAsset } from "@/types/site-assets";
 
-export default function CheckoutForm() {
+export default function CheckoutForm({ logo }: { logo: PublicSiteAsset | null }) {
   const { items, total } = useCart();
   const [error, setError] = useState("");
   const submit = (event: FormEvent<HTMLFormElement>) => {
@@ -26,7 +27,7 @@ export default function CheckoutForm() {
   return <form onSubmit={submit} noValidate>
     <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
       <div className="content-card p-6 sm:p-8">
-        <div className="mb-8 border-b border-slate-100 pb-6"><BrandLogo darkText /></div>
+        <div className="mb-8 border-b border-slate-100 pb-6"><BrandLogo darkText logo={logo} /></div>
         <h2 className="text-2xl font-black text-[var(--dark-navy)]">Customer details</h2>
         <div className="mt-6 grid gap-5 sm:grid-cols-2">
           <label className="form-label">Full name *<input className={field} name="name" required /></label>

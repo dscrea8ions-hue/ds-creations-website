@@ -21,6 +21,7 @@ pnpm-debug.log*
 
 # TypeScript
 *.tsbuildinfo
+app/generated/prisma/
 
 # Operating system
 .DS_Store

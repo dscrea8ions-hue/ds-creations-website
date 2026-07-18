@@ -1,0 +1,2 @@
+"use client";
+export default function AdminError({ reset }: { error: Error & { digest?: string }; reset: () => void }) { return <div className="content-card mx-auto max-w-xl p-8 text-center"><h1 className="text-2xl font-black text-[var(--dark-navy)]">Admin data is unavailable</h1><p className="mt-3 leading-7 text-slate-600">The database could not be reached. Check the environment configuration and try again.</p><button onClick={reset} className="btn-gold mt-6">Try again</button></div>; }

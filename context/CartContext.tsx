@@ -24,13 +24,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => { if (ready) localStorage.setItem("ds-creations-cart", JSON.stringify(items)); }, [items, ready]);
 
   const addItem = (product: Product, quantity = 1, size = product.sizes[0], colour = product.colours[0]) => {
+    const safeQuantity = Math.max(1, Number.isFinite(quantity) ? Math.floor(quantity) : 1);
     const key = `${product.id}:${size}:${colour}`;
     setItems((current) => {
       const existing = current.find((item) => item.key === key);
-      return existing ? current.map((item) => item.key === key ? { ...item, quantity: item.quantity + quantity } : item) : [...current, { key, product, size, colour, quantity }];
+      return existing ? current.map((item) => item.key === key ? { ...item, quantity: item.quantity + safeQuantity } : item) : [...current, { key, product, size, colour, quantity: safeQuantity }];
     });
   };
-  const updateQuantity = (key: string, quantity: number) => setItems((current) => current.map((item) => item.key === key ? { ...item, quantity: Math.max(1, quantity) } : item));
+  const updateQuantity = (key: string, quantity: number) => setItems((current) => current.map((item) => item.key === key ? { ...item, quantity: Math.max(1, Number.isFinite(quantity) ? Math.floor(quantity) : 1) } : item));
   const removeItem = (key: string) => setItems((current) => current.filter((item) => item.key !== key));
   const clearCart = () => setItems([]);
   const value = useMemo(() => {

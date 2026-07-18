@@ -20,6 +20,7 @@ export default function ProductCard({ product, compact = false }: { product: Pro
         <div className="flex items-center justify-between gap-3 text-xs font-bold uppercase tracking-wider text-[var(--royal-blue)]"><span>{product.category}</span><span className="rounded-full bg-slate-100 px-2 py-1 normal-case text-slate-600">{stockLabels[product.stockStatus]}</span></div>
         <Link href={`/products/${product.slug}`}><h2 className="mt-3 text-lg font-black text-[var(--dark-navy)] group-hover:text-[var(--royal-blue)]">{product.name}</h2></Link>
         {!compact && <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-600">{product.shortDescription}</p>}
+        {!compact && <p className="mt-2 text-xs font-semibold leading-5 text-slate-500">{product.deliveryTime}</p>}
         {product.schoolName && <p className="mt-2 text-xs font-semibold text-slate-500">{product.schoolName}</p>}
         <div className="mt-4 flex items-end justify-between gap-3">
           <div>{product.price === null ? <strong className="text-base text-[var(--dark-navy)]">Contact for price</strong> : <><strong className="text-xl text-[var(--dark-navy)]">{formatPrice(effectivePrice(product))}</strong>{product.offerPrice && <del className="ml-2 text-sm text-slate-400">{formatPrice(product.price)}</del>}</>}</div>

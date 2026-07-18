@@ -1,8 +1,16 @@
 import Link from "next/link";
 import { Mail, MapPin, MessageCircle, Phone } from "lucide-react";
-import Logo from "./Logo";
+import BrandLogo from "./BrandLogo";
 import DownloadCatalogueButton from "./DownloadCatalogueButton";
 
 export default function Footer() {
-  return <footer className="bg-[#041633] text-white"><div className="container-custom grid gap-10 py-14 md:grid-cols-2 lg:grid-cols-4"><div><Logo /><p className="mt-5 leading-7 text-white/70">Direct manufacturer and bulk supplier of uniforms, awards, apparel and customized institutional products.</p></div><div><h2 className="footer-title">Products</h2><div className="footer-links"><Link href="/products?audience=SCHOOL">School Uniforms</Link><Link href="/products?audience=CORPORATE">Corporate Uniforms</Link><Link href="/products">Awards & Gifts</Link><DownloadCatalogueButton className="btn-gold mt-2" showMessage /></div></div><div><h2 className="footer-title">Company</h2><div className="footer-links"><Link href="/about">About</Link><Link href="/industries">Industries</Link><Link href="/bulk-orders">Bulk Orders</Link><Link href="/contact">Contact</Link></div></div><div><h2 className="footer-title">Contact</h2><div className="space-y-4 text-sm text-white/75"><a className="flex gap-3 hover:text-[var(--gold)]" href="tel:+918368045535"><Phone size={18} />8368045535</a><a className="flex gap-3 break-all hover:text-[var(--gold)]" href="mailto:dscrea8ions@gmail.com"><Mail size={18} />dscrea8ions@gmail.com</a><p className="flex gap-3"><MapPin size={18} />Lajpat Nagar 4, New Delhi</p><a className="flex gap-3 hover:text-[var(--gold)]" href="https://wa.me/918368045535" target="_blank" rel="noreferrer"><MessageCircle size={18} />WhatsApp</a></div><p className="mt-5 text-xs text-white/45">Social profiles will be added when confirmed.</p></div></div><div className="border-t border-white/10 py-5 text-center text-sm text-white/55">© {new Date().getFullYear()} DS CREATIONS. All rights reserved.</div></footer>;
+  return <footer className="bg-[#041633] text-white">
+    <div className="container-custom grid gap-10 py-14 md:grid-cols-2 lg:grid-cols-4">
+      <div><BrandLogo /><p className="mt-5 leading-7 text-white/70">Direct manufacturer and supplier of uniforms, awards, apparel and customized institutional products. Individual and optional bulk orders are welcome.</p></div>
+      <div><h2 className="footer-title">Products</h2><div className="footer-links"><Link href="/products?audience=SCHOOL">School Uniforms</Link><Link href="/products?audience=CORPORATE">Corporate Uniforms</Link><Link href="/products">Awards & Gifts</Link><DownloadCatalogueButton className="btn-gold mt-2" showMessage /></div></div>
+      <div><h2 className="footer-title">Company</h2><div className="footer-links"><Link href="/about">About</Link><Link href="/industries">Industries</Link><Link href="/bulk-orders">Bulk Orders</Link><Link href="/contact">Contact</Link></div></div>
+      <div><h2 className="footer-title">Contact</h2><div className="space-y-4 text-sm text-white/75"><a className="flex gap-3 hover:text-[var(--gold)]" href="tel:+918368045535"><Phone size={18} />8368045535</a><a className="flex gap-3 break-all hover:text-[var(--gold)]" href="mailto:dscrea8ions@gmail.com"><Mail size={18} />dscrea8ions@gmail.com</a><p className="flex gap-3"><MapPin size={18} />Lajpat Nagar 4, New Delhi</p><a className="flex gap-3 hover:text-[var(--gold)]" href="https://wa.me/918368045535" target="_blank" rel="noreferrer"><MessageCircle size={18} />WhatsApp</a></div></div>
+    </div>
+    <div className="border-t border-white/10 py-5 text-center text-sm text-white/55">© {new Date().getFullYear()} DS CREATIONS. All rights reserved.</div>
+  </footer>;
 }

@@ -3,13 +3,14 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { CartProvider } from "@/context/CartContext";
+import { siteUrl } from "@/lib/site";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://dscreations.example"),
+  metadataBase: new URL(siteUrl),
   title: { default: "DS CREATIONS | Uniform & Customized Product Manufacturer", template: "%s | DS CREATIONS" },
   description: "DS CREATIONS manufactures uniforms, awards, customized apparel and institutional products in Lajpat Nagar 4, New Delhi.",
   keywords: ["DS CREATIONS", "school uniforms Delhi", "corporate uniforms", "bulk customized products"],
-  openGraph: { title: "DS CREATIONS", description: "Premium uniforms and customized products for schools and businesses.", type: "website", locale: "en_IN", siteName: "DS CREATIONS", images: [{ url: "/og.png", width: 1536, height: 1024, alt: "DS CREATIONS uniforms and customized products" }] },
+  openGraph: { title: "DS CREATIONS", description: "Premium uniforms and customized products for schools and businesses.", url: siteUrl, type: "website", locale: "en_IN", siteName: "DS CREATIONS", images: [{ url: "/og.png", width: 1536, height: 1024, alt: "DS CREATIONS uniforms and customized products" }] },
   twitter: { card: "summary_large_image", title: "DS CREATIONS", description: "Premium uniforms and customized products for schools and businesses.", images: ["/og.png"] },
 };
 

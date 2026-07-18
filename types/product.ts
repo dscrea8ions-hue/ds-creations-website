@@ -1,5 +1,6 @@
 export type ProductAudience = "SCHOOL" | "CORPORATE" | "INSTITUTION" | "GENERAL";
 export type StockStatus = "IN_STOCK" | "LOW_STOCK" | "OUT_OF_STOCK" | "MADE_TO_ORDER";
+export type FulfilmentType = "READY_STOCK" | "MADE_TO_ORDER" | "CUSTOMIZED";
 
 export type Product = {
   id: string;
@@ -25,6 +26,7 @@ export type Product = {
   colours: string[];
   weight?: string;
   deliveryTime: string;
+  fulfilmentType: FulfilmentType;
   customizationAvailable: boolean;
   embroideryAvailable: boolean;
   printingAvailable: boolean;
